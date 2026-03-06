@@ -191,7 +191,8 @@ Integrasi webhook eksternal.
 |---------|-------------|---------|
 | `whatsapp` | Jalankan webhook bridge WhatsApp ke NotebookLM | `notebooklm bridge whatsapp --webhook-secret secret --url http://127.0.0.1:8781` |
 
-Untuk setup Docker yang menjalankan GoWA + bridge bersamaan, lihat [WhatsApp Bridge Docker](whatsapp-bridge-docker.md).
+Untuk setup Docker (docker-only) yang menjalankan GoWA + bridge bersamaan, lihat [WhatsApp Bridge Docker](whatsapp-bridge-docker.md).
+Default image tim: `docker.io/wirnat/notebooklm-wa-bridge:latest` dan `docker.io/wirnat/notebooklm-whatsapp-go:latest`.
 
 Catatan perilaku bridge WhatsApp:
 - Bridge mengirim indikator mengetik (`/send/chat-presence`) saat memproses pesan.

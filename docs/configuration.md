@@ -104,8 +104,9 @@ Jika memakai `notebooklm bridge whatsapp`, variabel berikut tersedia:
 | `NOTEBOOKLM_WA_REPLY_MAX_SENTENCES` | Maksimal jumlah kalimat final per jawaban WA | `2` |
 | `NOTEBOOKLM_WA_REPLY_TARGET_CHARS` | Target panjang jawaban WA setelah diringkas | `480` |
 
-Untuk deployment Docker terintegrasi (GoWA + bridge), lihat [WhatsApp Bridge Docker](whatsapp-bridge-docker.md).
-Tetap butuh auth NotebookLM valid dari `notebooklm login` (sekali) atau `NOTEBOOKLM_AUTH_JSON`.
+Untuk deployment Docker terintegrasi (GoWA + bridge, docker-only), lihat [WhatsApp Bridge Docker](whatsapp-bridge-docker.md).
+Default image tim: `docker.io/wirnat/notebooklm-wa-bridge:latest` dan `docker.io/wirnat/notebooklm-whatsapp-go:latest`.
+Tetap butuh auth NotebookLM valid (mount `storage_state.json`) atau `NOTEBOOKLM_AUTH_JSON`.
 Jika `NOTEBOOKLM_WA_ALLOW_GROUPS=true`, bridge hanya membalas pesan grup yang melakukan mention ke nomor AI.
 
 ### NOTEBOOKLM_HOME

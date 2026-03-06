@@ -2,7 +2,8 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-COMPOSE_FILE="$ROOT_DIR/docker-compose.whatsapp.yml"
+COMPOSE_FILE_REGISTRY="$ROOT_DIR/docker-compose.whatsapp.registry.yml"
+COMPOSE_FILE_BUILD="$ROOT_DIR/docker-compose.whatsapp.yml"
 ENV_EXAMPLE="$ROOT_DIR/.env.whatsapp.example"
 ENV_FILE="${WHATSAPP_BRIDGE_ENV_FILE:-$ROOT_DIR/.env.whatsapp}"
 
@@ -11,15 +12,20 @@ usage() {
 Penggunaan:
   $(basename "$0") init
   $(basename "$0") up
-  $(basename "$0") up-full
+  $(basename "$0") up-build
+  $(basename "$0") pull
   $(basename "$0") down
   $(basename "$0") restart
   $(basename "$0") logs [service]
   $(basename "$0") ps
 
 Keterangan:
+  - Command "up" = mode docker-only (pull image prebuilt dari Docker Hub)
+  - Default image namespace: docker.io/wirnat
+  - "up-build" hanya untuk maintainer yang perlu build dari source lokal
   - File env default: .env.whatsapp
   - Override env file: WHATSAPP_BRIDGE_ENV_FILE=/path/file.env
+  - Override compose file: WHATSAPP_BRIDGE_COMPOSE_FILE=/path/docker-compose.yml
 USAGE
 }
 
@@ -42,18 +48,41 @@ load_env_and_prepare_dirs() {
 }
 
 compose() {
+  local compose_file="${WHATSAPP_BRIDGE_COMPOSE_FILE:-$COMPOSE_FILE_REGISTRY}"
   if command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; then
-    docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" "$@"
+    docker compose --env-file "$ENV_FILE" -f "$compose_file" "$@"
     return
   fi
 
   if command -v docker-compose >/dev/null 2>&1; then
-    docker-compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" "$@"
+    docker-compose --env-file "$ENV_FILE" -f "$compose_file" "$@"
     return
   fi
 
   echo "Docker Compose tidak ditemukan. Install Docker Desktop atau docker-compose." >&2
   exit 1
+}
+
+run_registry_stack() {
+  local bridge_image="${NOTEBOOKLM_BRIDGE_IMAGE:-docker.io/wirnat/notebooklm-wa-bridge:latest}"
+  local gowa_image="${WHATSAPP_GO_IMAGE:-docker.io/wirnat/notebooklm-whatsapp-go:latest}"
+
+  WHATSAPP_BRIDGE_COMPOSE_FILE="$COMPOSE_FILE_REGISTRY" compose pull
+  WHATSAPP_BRIDGE_COMPOSE_FILE="$COMPOSE_FILE_REGISTRY" GOWA_WEBHOOK_URL="http://notebooklm_bridge:8787/webhook/whatsapp" compose up -d
+
+  echo "Menggunakan image registry:"
+  echo "- notebooklm_bridge: ${bridge_image}"
+  echo "- whatsapp_go      : ${gowa_image}"
+}
+
+run_build_stack() {
+  WHATSAPP_BRIDGE_COMPOSE_FILE="$COMPOSE_FILE_BUILD" GOWA_WEBHOOK_URL="http://notebooklm_bridge:8787/webhook/whatsapp" compose up -d --build
+}
+
+print_endpoints() {
+  echo "GoWA UI   : http://127.0.0.1:${GOWA_UI_PORT:-8781}"
+  echo "Webhook   : http://127.0.0.1:${WA_BRIDGE_PORT:-8787}/webhook/whatsapp"
+  echo "Bridge HP : http://127.0.0.1:${WA_BRIDGE_PORT:-8787}/healthz"
 }
 
 cmd="${1:-}"
@@ -70,28 +99,26 @@ case "$cmd" in
     # shellcheck disable=SC1090
     source "$ENV_FILE"
     mkdir -p "${NOTEBOOKLM_HOME_HOST:-$ROOT_DIR/.docker/notebooklm-home}"
-    echo "Direktori auth siap. Pastikan storage_state.json sudah tersedia."
+    echo "Direktori auth siap."
+    echo "Default image registry: docker.io/wirnat/*"
     ;;
   up)
     ensure_env_file
     load_env_and_prepare_dirs
-    compose stop notebooklm_bridge >/dev/null 2>&1 || true
-    compose rm -f notebooklm_bridge >/dev/null 2>&1 || true
-    compose up -d --build whatsapp_go
-    echo "GoWA UI   : http://127.0.0.1:${GOWA_UI_PORT:-8781}"
-    echo
-    echo "Jalankan bridge di host dengan command ini:"
-    echo "notebooklm bridge whatsapp \\"
-    echo "  --webhook-secret ${WA_WEBHOOK_SECRET:-secret} \\"
-    echo "  --url http://127.0.0.1:${GOWA_UI_PORT:-8781}"
+    run_registry_stack
+    print_endpoints
     ;;
-  up-full)
+  up-build)
     ensure_env_file
     load_env_and_prepare_dirs
-    GOWA_WEBHOOK_URL="http://notebooklm_bridge:8787/webhook/whatsapp" compose up -d --build
-    echo "GoWA UI   : http://127.0.0.1:${GOWA_UI_PORT:-8781}"
-    echo "Webhook   : http://127.0.0.1:${WA_BRIDGE_PORT:-8787}/webhook/whatsapp"
-    echo "Bridge HP : http://127.0.0.1:${WA_BRIDGE_PORT:-8787}/healthz"
+    run_build_stack
+    echo "Menggunakan mode build dari source lokal."
+    print_endpoints
+    ;;
+  pull)
+    ensure_env_file
+    load_env_and_prepare_dirs
+    WHATSAPP_BRIDGE_COMPOSE_FILE="$COMPOSE_FILE_REGISTRY" compose pull
     ;;
   down)
     ensure_env_file
@@ -101,7 +128,8 @@ case "$cmd" in
     ensure_env_file
     load_env_and_prepare_dirs
     compose down
-    compose up -d --build whatsapp_go
+    run_registry_stack
+    print_endpoints
     ;;
   logs)
     ensure_env_file

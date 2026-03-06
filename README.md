@@ -84,25 +84,22 @@ These features are available via API/CLI but not exposed in NotebookLM's web int
 ## Installation
 
 ```bash
-# Basic installation
-pip install notebooklm-py
-
-# With browser login support (required for first-time setup)
-pip install "notebooklm-py[browser]"
-playwright install chromium
+# Docker-only setup (default untuk tim)
+./scripts/whatsapp-bridge-docker.sh init
+# edit .env.whatsapp (WA_WEBHOOK_SECRET, NOTEBOOKLM_HOME_HOST)
+./scripts/whatsapp-bridge-docker.sh up
 ```
 
-### Development Installation
+Default image yang dipakai:
 
-For contributors or testing unreleased features:
+- `docker.io/wirnat/notebooklm-wa-bridge:latest`
+- `docker.io/wirnat/notebooklm-whatsapp-go:latest`
 
-```bash
-pip install git+https://github.com/teng-lin/notebooklm-py@main
-```
-
-⚠️ The main branch may contain unstable changes. Use PyPI releases for production.
+Jika ingin pin versi, set `NOTEBOOKLM_BRIDGE_IMAGE` dan `WHATSAPP_GO_IMAGE` di `.env.whatsapp`.
 
 ## Quick Start
+
+> Catatan: alur instalasi/runtime standar sekarang **docker-only** via `./scripts/whatsapp-bridge-docker.sh up`. Contoh CLI/Python di bawah adalah referensi kapabilitas API.
 
 <p align="center">
   <a href="https://asciinema.org/a/767284" target="_blank"><img src="https://asciinema.org/a/767284.svg" width="600" /></a>
@@ -198,9 +195,17 @@ Untuk integrasi WhatsApp yang lebih seamless, jalankan GoWA + bridge dalam 1 sta
 ./scripts/whatsapp-bridge-docker.sh init
 # edit .env.whatsapp
 ./scripts/whatsapp-bridge-docker.sh up
-notebooklm bridge whatsapp \
-  --webhook-secret <secret> \
-  --url http://127.0.0.1:8781
+```
+
+Untuk maintainer, publish image ke Docker Hub `wirnat`:
+
+```bash
+./scripts/docker-publish-whatsapp.sh \
+  --registry docker.io/wirnat \
+  --tag v1.0.0
+
+# developer tetap install via docker-only
+./scripts/whatsapp-bridge-docker.sh up
 ```
 
 Endpoint default:
