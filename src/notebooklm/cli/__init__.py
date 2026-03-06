@@ -17,6 +17,7 @@ Re-exports from helpers for backward compatibility with tests.
 
 # Command groups (subcommand style)
 from .artifact import artifact
+from .bridge import bridge
 from .chat import register_chat_commands
 from .download import download
 from .generate import generate
@@ -87,6 +88,7 @@ __all__ = [
     "skill",
     "research",
     "language",
+    "bridge",
     # Language config
     "get_language",
     # Register functions (top-level command style)

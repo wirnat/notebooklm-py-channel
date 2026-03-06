@@ -62,6 +62,7 @@ from .auth import DEFAULT_STORAGE_PATH
 # Import command groups from cli package
 from .cli import (
     artifact,
+    bridge,
     download,
     generate,
     language,
@@ -142,6 +143,7 @@ cli.add_command(share)
 cli.add_command(skill)
 cli.add_command(research)
 cli.add_command(language)
+cli.add_command(bridge)
 
 
 # =============================================================================

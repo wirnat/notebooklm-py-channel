@@ -12,7 +12,9 @@ build/
 *.egg-info/
 .DS_Store
 .env
+.env.whatsapp
 .notebooklm/
+.docker/
 captured_rpcs/
 .worktrees/
 .worktree/

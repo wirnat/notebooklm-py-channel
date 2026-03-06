@@ -33,7 +33,7 @@ class SectionedGroup(click.Group):
         [
             (
                 "Command Groups (use: notebooklm <group> <command>)",
-                ["source", "artifact", "note", "share", "research"],
+                ["source", "artifact", "note", "share", "research", "bridge"],
             ),
             ("Artifact Actions (use: notebooklm <action> <type>)", ["generate", "download"]),
         ]

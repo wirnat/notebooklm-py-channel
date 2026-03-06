@@ -1,0 +1,72 @@
+name: notebooklm-whatsapp
+
+services:
+  notebooklm_bridge:
+    build:
+      context: .
+      dockerfile: docker/notebooklm.bridge.Dockerfile
+    restart: unless-stopped
+    init: true
+    env_file:
+      - .env.whatsapp
+    environment:
+      NOTEBOOKLM_HOME: /data/notebooklm
+      NOTEBOOKLM_WA_HOST: 0.0.0.0
+      NOTEBOOKLM_WA_PORT: 8787
+      NOTEBOOKLM_WA_PATH: /webhook/whatsapp
+      NOTEBOOKLM_WA_URL: http://whatsapp_go:3000
+      NOTEBOOKLM_WA_WEBHOOK_SECRET: ${WA_WEBHOOK_SECRET}
+      NOTEBOOKLM_WA_GOWA_BASIC_AUTH: ${GOWA_BASIC_AUTH:-}
+      NOTEBOOKLM_WA_GLOBAL_NOTEBOOK_ID: ${NOTEBOOKLM_WA_GLOBAL_NOTEBOOK_ID:-}
+      NOTEBOOKLM_WA_ADMINS: ${NOTEBOOKLM_WA_ADMINS:-}
+      NOTEBOOKLM_WA_ALLOW_GROUPS: ${NOTEBOOKLM_WA_ALLOW_GROUPS:-false}
+      NOTEBOOKLM_WA_MAX_REPLY_CHARS: ${NOTEBOOKLM_WA_MAX_REPLY_CHARS:-3000}
+    ports:
+      - "${WA_BRIDGE_PORT:-8787}:8787"
+    volumes:
+      - type: bind
+        source: ${NOTEBOOKLM_HOME_HOST:-./.docker/notebooklm-home}
+        target: /data/notebooklm
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - |
+          import urllib.request
+          urllib.request.urlopen('http://127.0.0.1:8787/healthz', timeout=3)
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  whatsapp_go:
+    build:
+      context: ./go-whatsapp-web-multidevice
+      dockerfile: docker/golang.Dockerfile
+    restart: unless-stopped
+    init: true
+    env_file:
+      - .env.whatsapp
+    environment:
+      APP_PORT: 3000
+      APP_HOST: 0.0.0.0
+      APP_DEBUG: ${GOWA_APP_DEBUG:-false}
+      APP_BASIC_AUTH: ${GOWA_BASIC_AUTH:-}
+      WHATSAPP_WEBHOOK: ${GOWA_WEBHOOK_URL:-http://host.docker.internal:8787/webhook/whatsapp}
+      WHATSAPP_WEBHOOK_SECRET: ${WA_WEBHOOK_SECRET}
+      WHATSAPP_WEBHOOK_EVENTS: message
+      WHATSAPP_AUTO_MARK_READ: ${GOWA_WHATSAPP_AUTO_MARK_READ:-false}
+      WHATSAPP_AUTO_DOWNLOAD_MEDIA: ${GOWA_WHATSAPP_AUTO_DOWNLOAD_MEDIA:-true}
+      WHATSAPP_ACCOUNT_VALIDATION: ${GOWA_WHATSAPP_ACCOUNT_VALIDATION:-true}
+      DB_URI: file:storages/whatsapp.db?_foreign_keys=on&_journal_mode=WAL&_busy_timeout=5000
+      DB_KEYS_URI: file:storages/keys.db?_foreign_keys=on&_journal_mode=WAL&_busy_timeout=5000
+    ports:
+      - "${GOWA_UI_PORT:-8781}:3000"
+    volumes:
+      - gowa_storages:/app/storages
+      - gowa_media:/app/statics/media
+
+volumes:
+  gowa_storages:
+  gowa_media:

@@ -27,7 +27,7 @@ See [Configuration](configuration.md) for details on environment variables and C
 - **Session commands** - Authentication and context management
 - **Notebook commands** - CRUD operations on notebooks
 - **Chat commands** - Querying and conversation management
-- **Grouped commands** - `source`, `artifact`, `generate`, `download`, `note`
+- **Grouped commands** - `source`, `artifact`, `generate`, `download`, `note`, `bridge`
 
 ---
 
@@ -182,6 +182,21 @@ Manage Claude Code skill integration.
 | `show` | Display skill content | `skill show` |
 
 After installation, Claude Code recognizes NotebookLM commands via `/notebooklm` or natural language like "create a podcast about X".
+
+### Bridge Commands (`notebooklm bridge <cmd>`)
+
+Integrasi webhook eksternal.
+
+| Command | Description | Example |
+|---------|-------------|---------|
+| `whatsapp` | Jalankan webhook bridge WhatsApp ke NotebookLM | `notebooklm bridge whatsapp --webhook-secret secret --url http://127.0.0.1:8781` |
+
+Untuk setup Docker yang menjalankan GoWA + bridge bersamaan, lihat [WhatsApp Bridge Docker](whatsapp-bridge-docker.md).
+
+Catatan perilaku bridge WhatsApp:
+- Bridge mengirim indikator mengetik (`/send/chat-presence`) saat memproses pesan.
+- Jika `--allow-groups` aktif, pesan grup hanya dibalas jika ada mention ke nomor AI.
+- Admin bisa di-set via `--admin` atau `--admin-phone` (bisa diulang / comma-separated).
 
 ### Features Beyond the Web UI
 

@@ -190,11 +190,32 @@ notebooklm skill install
 # "/notebooklm generate video"
 ```
 
+## WhatsApp Bridge (Docker)
+
+Untuk integrasi WhatsApp yang lebih seamless, jalankan GoWA + bridge dalam 1 stack Docker:
+
+```bash
+./scripts/whatsapp-bridge-docker.sh init
+# edit .env.whatsapp
+./scripts/whatsapp-bridge-docker.sh up
+notebooklm bridge whatsapp \
+  --webhook-secret <secret> \
+  --url http://127.0.0.1:8781
+```
+
+Endpoint default:
+
+- GoWA UI: `http://127.0.0.1:8781`
+- Webhook bridge (host): `http://127.0.0.1:8787/webhook/whatsapp`
+
+Catatan auth: Anda tetap perlu session NotebookLM valid dari `notebooklm login` (sekali), kecuali memakai `NOTEBOOKLM_AUTH_JSON`.
+
 ## Documentation
 
 - **[CLI Reference](docs/cli-reference.md)** - Complete command documentation
 - **[Python API](docs/python-api.md)** - Full API reference
 - **[Configuration](docs/configuration.md)** - Storage and settings
+- **[WhatsApp Bridge Docker](docs/whatsapp-bridge-docker.md)** - Setup GoWA + bridge dengan Docker Compose
 - **[Troubleshooting](docs/troubleshooting.md)** - Common issues and solutions
 - **[API Stability](docs/stability.md)** - Versioning policy and stability guarantees
 

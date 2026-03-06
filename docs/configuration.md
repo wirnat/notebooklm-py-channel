@@ -83,6 +83,31 @@ A persistent Chromium user data directory used during `notebooklm login`.
 | `NOTEBOOKLM_LOG_LEVEL` | Logging level: `DEBUG`, `INFO`, `WARNING`, `ERROR` | `WARNING` |
 | `NOTEBOOKLM_DEBUG_RPC` | Legacy: Enable RPC debug logging (use `LOG_LEVEL=DEBUG` instead) | `false` |
 
+### WhatsApp Bridge Variables
+
+Jika memakai `notebooklm bridge whatsapp`, variabel berikut tersedia:
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `NOTEBOOKLM_WA_HOST` | Bind host webhook bridge | `0.0.0.0` |
+| `NOTEBOOKLM_WA_PORT` | Bind port webhook bridge | `8787` |
+| `NOTEBOOKLM_WA_PATH` | Path webhook menerima event GoWA | `/webhook/whatsapp` |
+| `NOTEBOOKLM_WA_HEALTH_PATH` | Path health check bridge | `/healthz` |
+| `NOTEBOOKLM_WA_WEBHOOK_SECRET` | HMAC secret untuk verifikasi `X-Hub-Signature-256` | - |
+| `NOTEBOOKLM_WA_URL` | URL GoWA UI/API (alias utama) | `http://127.0.0.1:8781` |
+| `NOTEBOOKLM_WA_GOWA_BASE_URL` | URL GoWA UI/API | `http://127.0.0.1:8781` |
+| `NOTEBOOKLM_WA_GOWA_BASIC_AUTH` | Basic auth untuk GoWA (`user:pass` atau `Basic ...`) | - |
+| `NOTEBOOKLM_WA_GLOBAL_NOTEBOOK_ID` | Notebook global default | - |
+| `NOTEBOOKLM_WA_ADMINS` | Admin whitelist comma-separated | - |
+| `NOTEBOOKLM_WA_ALLOW_GROUPS` | Proses group chat (`true/false`) | `false` |
+| `NOTEBOOKLM_WA_MAX_REPLY_CHARS` | Batas panjang balasan per pesan WhatsApp | `3000` |
+| `NOTEBOOKLM_WA_REPLY_MAX_SENTENCES` | Maksimal jumlah kalimat final per jawaban WA | `2` |
+| `NOTEBOOKLM_WA_REPLY_TARGET_CHARS` | Target panjang jawaban WA setelah diringkas | `480` |
+
+Untuk deployment Docker terintegrasi (GoWA + bridge), lihat [WhatsApp Bridge Docker](whatsapp-bridge-docker.md).
+Tetap butuh auth NotebookLM valid dari `notebooklm login` (sekali) atau `NOTEBOOKLM_AUTH_JSON`.
+Jika `NOTEBOOKLM_WA_ALLOW_GROUPS=true`, bridge hanya membalas pesan grup yang melakukan mention ke nomor AI.
+
 ### NOTEBOOKLM_HOME
 
 Relocates all configuration files to a custom directory:
